@@ -1,6 +1,14 @@
+#include <iomanip>
+#include <sstream>
 #include <vector>
+
+#include <BluetoothSerial.h>
 #include <SPI.h>
 #include "kiss_fftr.h"
+
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
 
 #define HSPI_SS      15
 #define SPI_CLK      1000000
@@ -62,6 +70,8 @@ void read_accelerometer(uint cs_pin, SPIClass *adxl345, int16_t *x, int16_t *y, 
     *z = buffer[4] | (buffer[5] << 8);
 }
 
+BluetoothSerial SerialBT;
+
 std::vector<float> samples;
 kiss_fftr_cfg fftcfg;
 kiss_fft_cpx freqData[SIGNAL_LENGTH];
@@ -70,7 +80,7 @@ float currentRPM;
 SPIClass adxl345;
 unsigned long sampleTimestamp, printTimestamp;
 void setup() {
-    Serial.begin(115200);
+    SerialBT.begin("Agitador Orbital");
 
     // Configura a acelerômetro
     adxl345.begin();
@@ -115,8 +125,10 @@ void loop() {
 
     if (now - printTimestamp > 1000000) {
         printTimestamp = now;
-        Serial.print("RPM: ");
-        Serial.print(currentRPM);
-        Serial.println("");
+
+        std::stringstream message;
+        message << std::setprecision(2) << std::showpoint << std::fixed << currentRPM << std::endl;
+        SerialBT.write(
+          reinterpret_cast<const uint8_t*>(message.str().c_str()), message.str().size());
     }
 }
