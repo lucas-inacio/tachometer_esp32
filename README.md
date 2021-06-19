@@ -22,5 +22,9 @@ the device named "Agitador Orbital" (Orbital Shaker). A string with only numbers
   * ESP32 Devkit V1
   * ADXL345 Accelerometer
 
+## Known issues
+I haven't been able to get bluetooth working with version 1.0.6 of the arduino-esp32 core. Opening the virtual COM port in the computer shows up an error at the ESP32 side.
+The solution for now is to downgrade to 1.0.4.
+
 ## Test circuit
 ![Example circuit](/circuit/circuit.png)
